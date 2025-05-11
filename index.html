@@ -1,0 +1,695 @@
+
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<title>Regents Geometry Quiz - Full Features</title>
+<style>
+body { font-family: Arial; background: #f0f0f0; padding: 20px; }
+.quiz-container { max-width: 800px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px #aaa; margin: auto; }
+button { margin-top: 10px; padding: 10px; width: 100%; border: 1px solid #999; border-radius: 5px; background: #eee; }
+button:hover { background: #ddd; }
+.feedback, .score, .category, .progress-bar-container { margin-top: 15px; }
+.feedback { font-weight: bold; }
+.score { font-size: 18px; color: #333; }
+.category { font-size: 14px; color: #666; }
+.progress-bar-container { background: #ddd; border-radius: 20px; overflow: hidden; }
+.progress-bar { height: 20px; background: #76c7c0; width: 0%; text-align: center; color: white; }
+.review { margin-top: 30px; }
+</style></head><body>
+<div class="quiz-container">
+<h2>Regents Geometry Practice Quiz</h2>
+<div class="category" id="category"></div>
+<div id="question"></div>
+<div id="options"></div>
+<div class="feedback" id="feedback"></div>
+<div class="progress-bar-container"><div class="progress-bar" id="progress-bar">0%</div></div>
+<div class="score" id="score"></div>
+<button onclick="nextQuestion()">Next Question</button>
+<button onclick="printReview()">Print Review Report</button>
+<div class="review" id="review"></div>
+</div>
+<script>
+let correct = 0;
+let total = 0;
+let current = 0;
+let reviewData = [];
+
+const quiz = [
+{
+    question: "What is the midpoint of segment joining (−2, 4) and (6, −2) (Set 1)?",
+    options: ['(2, 1)', '(4, 1)', '(3, −3)', '(1, 2)'],
+    answer: 0,
+    feedback: "Correct! Midpoint = ((−2+6)/2, (4+−2)/2) = (2, 1).",
+    category: "Volume"
+},{
+    question: "What is the midpoint of segment joining (−2, 4) and (6, −2) (Set 2)?",
+    options: ['(2, 1)', '(4, 1)', '(3, −3)', '(1, 2)'],
+    answer: 0,
+    feedback: "Correct! Midpoint = ((−2+6)/2, (4+−2)/2) = (2, 1).",
+    category: "Transformations"
+},{
+    question: "What is the measure of one interior angle of a regular hexagon (Set 3)?",
+    options: ['120°', '135°', '150°', '160°'],
+    answer: 0,
+    feedback: "Correct! A regular hexagon has interior angles of 120°.",
+    category: "Transformations"
+},{
+    question: "Which transformation is an isometry (Set 4)?",
+    options: ['Dilation', 'Rotation', 'Stretch', 'Enlargement'],
+    answer: 1,
+    feedback: "Correct! Rotation is an isometry because it preserves distances.",
+    category: "Coordinate Geometry"
+},{
+    question: "What is the measure of one interior angle of a regular hexagon (Set 5)?",
+    options: ['120°', '135°', '150°', '160°'],
+    answer: 0,
+    feedback: "Correct! A regular hexagon has interior angles of 120°.",
+    category: "Volume"
+},{
+    question: "What is the midpoint of segment joining (−2, 4) and (6, −2) (Set 6)?",
+    options: ['(2, 1)', '(4, 1)', '(3, −3)', '(1, 2)'],
+    answer: 0,
+    feedback: "Correct! Midpoint = ((−2+6)/2, (4+−2)/2) = (2, 1).",
+    category: "Triangles"
+},{
+    question: "What is the volume of a sphere with radius 3 (Set 7)?",
+    options: ['36π', '81π', '27π', '36'],
+    answer: 2,
+    feedback: "Correct! Volume = (4/3)πr³ = (4/3)π(27) = 36π.",
+    category: "Angles"
+},{
+    question: "What is the midpoint of segment joining (−2, 4) and (6, −2) (Set 8)?",
+    options: ['(2, 1)', '(4, 1)', '(3, −3)', '(1, 2)'],
+    answer: 0,
+    feedback: "Correct! Midpoint = ((−2+6)/2, (4+−2)/2) = (2, 1).",
+    category: "Angles"
+},{
+    question: "What is the measure of one interior angle of a regular hexagon (Set 9)?",
+    options: ['120°', '135°', '150°', '160°'],
+    answer: 0,
+    feedback: "Correct! A regular hexagon has interior angles of 120°.",
+    category: "Coordinate Geometry"
+},{
+    question: "What is the volume of a sphere with radius 3 (Set 10)?",
+    options: ['36π', '81π', '27π', '36'],
+    answer: 2,
+    feedback: "Correct! Volume = (4/3)πr³ = (4/3)π(27) = 36π.",
+    category: "Coordinate Geometry"
+},{
+    question: "What is the measure of one interior angle of a regular hexagon (Set 11)?",
+    options: ['120°', '135°', '150°', '160°'],
+    answer: 0,
+    feedback: "Correct! A regular hexagon has interior angles of 120°.",
+    category: "Volume"
+},{
+    question: "What is the volume of a sphere with radius 3 (Set 12)?",
+    options: ['36π', '81π', '27π', '36'],
+    answer: 2,
+    feedback: "Correct! Volume = (4/3)πr³ = (4/3)π(27) = 36π.",
+    category: "Angles"
+},{
+    question: "What is the volume of a sphere with radius 3 (Set 13)?",
+    options: ['36π', '81π', '27π', '36'],
+    answer: 2,
+    feedback: "Correct! Volume = (4/3)πr³ = (4/3)π(27) = 36π.",
+    category: "Angles"
+},{
+    question: "What is the measure of one interior angle of a regular hexagon (Set 14)?",
+    options: ['120°', '135°', '150°', '160°'],
+    answer: 0,
+    feedback: "Correct! A regular hexagon has interior angles of 120°.",
+    category: "Volume"
+},{
+    question: "What is the volume of a sphere with radius 3 (Set 15)?",
+    options: ['36π', '81π', '27π', '36'],
+    answer: 2,
+    feedback: "Correct! Volume = (4/3)πr³ = (4/3)π(27) = 36π.",
+    category: "Triangles"
+},{
+    question: "What is the measure of one interior angle of a regular hexagon (Set 16)?",
+    options: ['120°', '135°', '150°', '160°'],
+    answer: 0,
+    feedback: "Correct! A regular hexagon has interior angles of 120°.",
+    category: "Triangles"
+},{
+    question: "What is the volume of a sphere with radius 3 (Set 17)?",
+    options: ['36π', '81π', '27π', '36'],
+    answer: 2,
+    feedback: "Correct! Volume = (4/3)πr³ = (4/3)π(27) = 36π.",
+    category: "Angles"
+},{
+    question: "What is the volume of a sphere with radius 3 (Set 18)?",
+    options: ['36π', '81π', '27π', '36'],
+    answer: 2,
+    feedback: "Correct! Volume = (4/3)πr³ = (4/3)π(27) = 36π.",
+    category: "Angles"
+},{
+    question: "If triangle ABC is similar to triangle DEF, which of the following must be true (Set 19)?",
+    options: ['AB = DE', '∠A = ∠E', 'AC = EF', 'BC = DF'],
+    answer: 1,
+    feedback: "Correct! Corresponding angles of similar triangles are congruent.",
+    category: "Volume"
+},{
+    question: "What is the midpoint of segment joining (−2, 4) and (6, −2) (Set 20)?",
+    options: ['(2, 1)', '(4, 1)', '(3, −3)', '(1, 2)'],
+    answer: 0,
+    feedback: "Correct! Midpoint = ((−2+6)/2, (4+−2)/2) = (2, 1).",
+    category: "Coordinate Geometry"
+},{
+    question: "Which transformation is an isometry (Set 21)?",
+    options: ['Dilation', 'Rotation', 'Stretch', 'Enlargement'],
+    answer: 1,
+    feedback: "Correct! Rotation is an isometry because it preserves distances.",
+    category: "Coordinate Geometry"
+},{
+    question: "If triangle ABC is similar to triangle DEF, which of the following must be true (Set 22)?",
+    options: ['AB = DE', '∠A = ∠E', 'AC = EF', 'BC = DF'],
+    answer: 1,
+    feedback: "Correct! Corresponding angles of similar triangles are congruent.",
+    category: "Coordinate Geometry"
+},{
+    question: "What is the midpoint of segment joining (−2, 4) and (6, −2) (Set 23)?",
+    options: ['(2, 1)', '(4, 1)', '(3, −3)', '(1, 2)'],
+    answer: 0,
+    feedback: "Correct! Midpoint = ((−2+6)/2, (4+−2)/2) = (2, 1).",
+    category: "Triangles"
+},{
+    question: "What is the measure of one interior angle of a regular hexagon (Set 24)?",
+    options: ['120°', '135°', '150°', '160°'],
+    answer: 0,
+    feedback: "Correct! A regular hexagon has interior angles of 120°.",
+    category: "Triangles"
+},{
+    question: "What is the measure of one interior angle of a regular hexagon (Set 25)?",
+    options: ['120°', '135°', '150°', '160°'],
+    answer: 0,
+    feedback: "Correct! A regular hexagon has interior angles of 120°.",
+    category: "Triangles"
+},{
+    question: "If triangle ABC is similar to triangle DEF, which of the following must be true (Set 26)?",
+    options: ['AB = DE', '∠A = ∠E', 'AC = EF', 'BC = DF'],
+    answer: 1,
+    feedback: "Correct! Corresponding angles of similar triangles are congruent.",
+    category: "Triangles"
+},{
+    question: "What is the volume of a sphere with radius 3 (Set 27)?",
+    options: ['36π', '81π', '27π', '36'],
+    answer: 2,
+    feedback: "Correct! Volume = (4/3)πr³ = (4/3)π(27) = 36π.",
+    category: "Triangles"
+},{
+    question: "What is the volume of a sphere with radius 3 (Set 28)?",
+    options: ['36π', '81π', '27π', '36'],
+    answer: 2,
+    feedback: "Correct! Volume = (4/3)πr³ = (4/3)π(27) = 36π.",
+    category: "Coordinate Geometry"
+},{
+    question: "What is the volume of a sphere with radius 3 (Set 29)?",
+    options: ['36π', '81π', '27π', '36'],
+    answer: 2,
+    feedback: "Correct! Volume = (4/3)πr³ = (4/3)π(27) = 36π.",
+    category: "Angles"
+},{
+    question: "Which transformation is an isometry (Set 30)?",
+    options: ['Dilation', 'Rotation', 'Stretch', 'Enlargement'],
+    answer: 1,
+    feedback: "Correct! Rotation is an isometry because it preserves distances.",
+    category: "Coordinate Geometry"
+},{
+    question: "If triangle ABC is similar to triangle DEF, which of the following must be true (Set 31)?",
+    options: ['AB = DE', '∠A = ∠E', 'AC = EF', 'BC = DF'],
+    answer: 1,
+    feedback: "Correct! Corresponding angles of similar triangles are congruent.",
+    category: "Transformations"
+},{
+    question: "What is the measure of one interior angle of a regular hexagon (Set 32)?",
+    options: ['120°', '135°', '150°', '160°'],
+    answer: 0,
+    feedback: "Correct! A regular hexagon has interior angles of 120°.",
+    category: "Transformations"
+},{
+    question: "What is the measure of one interior angle of a regular hexagon (Set 33)?",
+    options: ['120°', '135°', '150°', '160°'],
+    answer: 0,
+    feedback: "Correct! A regular hexagon has interior angles of 120°.",
+    category: "Coordinate Geometry"
+},{
+    question: "What is the measure of one interior angle of a regular hexagon (Set 34)?",
+    options: ['120°', '135°', '150°', '160°'],
+    answer: 0,
+    feedback: "Correct! A regular hexagon has interior angles of 120°.",
+    category: "Transformations"
+},{
+    question: "Which transformation is an isometry (Set 35)?",
+    options: ['Dilation', 'Rotation', 'Stretch', 'Enlargement'],
+    answer: 1,
+    feedback: "Correct! Rotation is an isometry because it preserves distances.",
+    category: "Triangles"
+},{
+    question: "What is the measure of one interior angle of a regular hexagon (Set 36)?",
+    options: ['120°', '135°', '150°', '160°'],
+    answer: 0,
+    feedback: "Correct! A regular hexagon has interior angles of 120°.",
+    category: "Coordinate Geometry"
+},{
+    question: "If triangle ABC is similar to triangle DEF, which of the following must be true (Set 37)?",
+    options: ['AB = DE', '∠A = ∠E', 'AC = EF', 'BC = DF'],
+    answer: 1,
+    feedback: "Correct! Corresponding angles of similar triangles are congruent.",
+    category: "Transformations"
+},{
+    question: "What is the midpoint of segment joining (−2, 4) and (6, −2) (Set 38)?",
+    options: ['(2, 1)', '(4, 1)', '(3, −3)', '(1, 2)'],
+    answer: 0,
+    feedback: "Correct! Midpoint = ((−2+6)/2, (4+−2)/2) = (2, 1).",
+    category: "Transformations"
+},{
+    question: "What is the volume of a sphere with radius 3 (Set 39)?",
+    options: ['36π', '81π', '27π', '36'],
+    answer: 2,
+    feedback: "Correct! Volume = (4/3)πr³ = (4/3)π(27) = 36π.",
+    category: "Transformations"
+},{
+    question: "What is the volume of a sphere with radius 3 (Set 40)?",
+    options: ['36π', '81π', '27π', '36'],
+    answer: 2,
+    feedback: "Correct! Volume = (4/3)πr³ = (4/3)π(27) = 36π.",
+    category: "Volume"
+},{
+    question: "What is the midpoint of segment joining (−2, 4) and (6, −2) (Set 41)?",
+    options: ['(2, 1)', '(4, 1)', '(3, −3)', '(1, 2)'],
+    answer: 0,
+    feedback: "Correct! Midpoint = ((−2+6)/2, (4+−2)/2) = (2, 1).",
+    category: "Transformations"
+},{
+    question: "What is the midpoint of segment joining (−2, 4) and (6, −2) (Set 42)?",
+    options: ['(2, 1)', '(4, 1)', '(3, −3)', '(1, 2)'],
+    answer: 0,
+    feedback: "Correct! Midpoint = ((−2+6)/2, (4+−2)/2) = (2, 1).",
+    category: "Angles"
+},{
+    question: "What is the measure of one interior angle of a regular hexagon (Set 43)?",
+    options: ['120°', '135°', '150°', '160°'],
+    answer: 0,
+    feedback: "Correct! A regular hexagon has interior angles of 120°.",
+    category: "Triangles"
+},{
+    question: "What is the midpoint of segment joining (−2, 4) and (6, −2) (Set 44)?",
+    options: ['(2, 1)', '(4, 1)', '(3, −3)', '(1, 2)'],
+    answer: 0,
+    feedback: "Correct! Midpoint = ((−2+6)/2, (4+−2)/2) = (2, 1).",
+    category: "Triangles"
+},{
+    question: "What is the midpoint of segment joining (−2, 4) and (6, −2) (Set 45)?",
+    options: ['(2, 1)', '(4, 1)', '(3, −3)', '(1, 2)'],
+    answer: 0,
+    feedback: "Correct! Midpoint = ((−2+6)/2, (4+−2)/2) = (2, 1).",
+    category: "Transformations"
+},{
+    question: "What is the volume of a sphere with radius 3 (Set 46)?",
+    options: ['36π', '81π', '27π', '36'],
+    answer: 2,
+    feedback: "Correct! Volume = (4/3)πr³ = (4/3)π(27) = 36π.",
+    category: "Transformations"
+},{
+    question: "What is the measure of one interior angle of a regular hexagon (Set 47)?",
+    options: ['120°', '135°', '150°', '160°'],
+    answer: 0,
+    feedback: "Correct! A regular hexagon has interior angles of 120°.",
+    category: "Transformations"
+},{
+    question: "What is the measure of one interior angle of a regular hexagon (Set 48)?",
+    options: ['120°', '135°', '150°', '160°'],
+    answer: 0,
+    feedback: "Correct! A regular hexagon has interior angles of 120°.",
+    category: "Transformations"
+},{
+    question: "What is the midpoint of segment joining (−2, 4) and (6, −2) (Set 49)?",
+    options: ['(2, 1)', '(4, 1)', '(3, −3)', '(1, 2)'],
+    answer: 0,
+    feedback: "Correct! Midpoint = ((−2+6)/2, (4+−2)/2) = (2, 1).",
+    category: "Angles"
+},{
+    question: "What is the measure of one interior angle of a regular hexagon (Set 50)?",
+    options: ['120°', '135°', '150°', '160°'],
+    answer: 0,
+    feedback: "Correct! A regular hexagon has interior angles of 120°.",
+    category: "Coordinate Geometry"
+},{
+    question: "What is the midpoint of segment joining (−2, 4) and (6, −2) (Set 51)?",
+    options: ['(2, 1)', '(4, 1)', '(3, −3)', '(1, 2)'],
+    answer: 0,
+    feedback: "Correct! Midpoint = ((−2+6)/2, (4+−2)/2) = (2, 1).",
+    category: "Coordinate Geometry"
+},{
+    question: "What is the volume of a sphere with radius 3 (Set 52)?",
+    options: ['36π', '81π', '27π', '36'],
+    answer: 2,
+    feedback: "Correct! Volume = (4/3)πr³ = (4/3)π(27) = 36π.",
+    category: "Triangles"
+},{
+    question: "What is the volume of a sphere with radius 3 (Set 53)?",
+    options: ['36π', '81π', '27π', '36'],
+    answer: 2,
+    feedback: "Correct! Volume = (4/3)πr³ = (4/3)π(27) = 36π.",
+    category: "Angles"
+},{
+    question: "What is the midpoint of segment joining (−2, 4) and (6, −2) (Set 54)?",
+    options: ['(2, 1)', '(4, 1)', '(3, −3)', '(1, 2)'],
+    answer: 0,
+    feedback: "Correct! Midpoint = ((−2+6)/2, (4+−2)/2) = (2, 1).",
+    category: "Volume"
+},{
+    question: "What is the measure of one interior angle of a regular hexagon (Set 55)?",
+    options: ['120°', '135°', '150°', '160°'],
+    answer: 0,
+    feedback: "Correct! A regular hexagon has interior angles of 120°.",
+    category: "Triangles"
+},{
+    question: "What is the midpoint of segment joining (−2, 4) and (6, −2) (Set 56)?",
+    options: ['(2, 1)', '(4, 1)', '(3, −3)', '(1, 2)'],
+    answer: 0,
+    feedback: "Correct! Midpoint = ((−2+6)/2, (4+−2)/2) = (2, 1).",
+    category: "Coordinate Geometry"
+},{
+    question: "Which transformation is an isometry (Set 57)?",
+    options: ['Dilation', 'Rotation', 'Stretch', 'Enlargement'],
+    answer: 1,
+    feedback: "Correct! Rotation is an isometry because it preserves distances.",
+    category: "Coordinate Geometry"
+},{
+    question: "What is the volume of a sphere with radius 3 (Set 58)?",
+    options: ['36π', '81π', '27π', '36'],
+    answer: 2,
+    feedback: "Correct! Volume = (4/3)πr³ = (4/3)π(27) = 36π.",
+    category: "Transformations"
+},{
+    question: "What is the measure of one interior angle of a regular hexagon (Set 59)?",
+    options: ['120°', '135°', '150°', '160°'],
+    answer: 0,
+    feedback: "Correct! A regular hexagon has interior angles of 120°.",
+    category: "Coordinate Geometry"
+},{
+    question: "Which transformation is an isometry (Set 60)?",
+    options: ['Dilation', 'Rotation', 'Stretch', 'Enlargement'],
+    answer: 1,
+    feedback: "Correct! Rotation is an isometry because it preserves distances.",
+    category: "Transformations"
+},{
+    question: "Which transformation is an isometry (Set 61)?",
+    options: ['Dilation', 'Rotation', 'Stretch', 'Enlargement'],
+    answer: 1,
+    feedback: "Correct! Rotation is an isometry because it preserves distances.",
+    category: "Triangles"
+},{
+    question: "What is the midpoint of segment joining (−2, 4) and (6, −2) (Set 62)?",
+    options: ['(2, 1)', '(4, 1)', '(3, −3)', '(1, 2)'],
+    answer: 0,
+    feedback: "Correct! Midpoint = ((−2+6)/2, (4+−2)/2) = (2, 1).",
+    category: "Triangles"
+},{
+    question: "Which transformation is an isometry (Set 63)?",
+    options: ['Dilation', 'Rotation', 'Stretch', 'Enlargement'],
+    answer: 1,
+    feedback: "Correct! Rotation is an isometry because it preserves distances.",
+    category: "Triangles"
+},{
+    question: "What is the measure of one interior angle of a regular hexagon (Set 64)?",
+    options: ['120°', '135°', '150°', '160°'],
+    answer: 0,
+    feedback: "Correct! A regular hexagon has interior angles of 120°.",
+    category: "Coordinate Geometry"
+},{
+    question: "If triangle ABC is similar to triangle DEF, which of the following must be true (Set 65)?",
+    options: ['AB = DE', '∠A = ∠E', 'AC = EF', 'BC = DF'],
+    answer: 1,
+    feedback: "Correct! Corresponding angles of similar triangles are congruent.",
+    category: "Triangles"
+},{
+    question: "What is the measure of one interior angle of a regular hexagon (Set 66)?",
+    options: ['120°', '135°', '150°', '160°'],
+    answer: 0,
+    feedback: "Correct! A regular hexagon has interior angles of 120°.",
+    category: "Triangles"
+},{
+    question: "Which transformation is an isometry (Set 67)?",
+    options: ['Dilation', 'Rotation', 'Stretch', 'Enlargement'],
+    answer: 1,
+    feedback: "Correct! Rotation is an isometry because it preserves distances.",
+    category: "Triangles"
+},{
+    question: "What is the measure of one interior angle of a regular hexagon (Set 68)?",
+    options: ['120°', '135°', '150°', '160°'],
+    answer: 0,
+    feedback: "Correct! A regular hexagon has interior angles of 120°.",
+    category: "Volume"
+},{
+    question: "Which transformation is an isometry (Set 69)?",
+    options: ['Dilation', 'Rotation', 'Stretch', 'Enlargement'],
+    answer: 1,
+    feedback: "Correct! Rotation is an isometry because it preserves distances.",
+    category: "Triangles"
+},{
+    question: "What is the volume of a sphere with radius 3 (Set 70)?",
+    options: ['36π', '81π', '27π', '36'],
+    answer: 2,
+    feedback: "Correct! Volume = (4/3)πr³ = (4/3)π(27) = 36π.",
+    category: "Coordinate Geometry"
+},{
+    question: "What is the midpoint of segment joining (−2, 4) and (6, −2) (Set 71)?",
+    options: ['(2, 1)', '(4, 1)', '(3, −3)', '(1, 2)'],
+    answer: 0,
+    feedback: "Correct! Midpoint = ((−2+6)/2, (4+−2)/2) = (2, 1).",
+    category: "Triangles"
+},{
+    question: "Which transformation is an isometry (Set 72)?",
+    options: ['Dilation', 'Rotation', 'Stretch', 'Enlargement'],
+    answer: 1,
+    feedback: "Correct! Rotation is an isometry because it preserves distances.",
+    category: "Volume"
+},{
+    question: "If triangle ABC is similar to triangle DEF, which of the following must be true (Set 73)?",
+    options: ['AB = DE', '∠A = ∠E', 'AC = EF', 'BC = DF'],
+    answer: 1,
+    feedback: "Correct! Corresponding angles of similar triangles are congruent.",
+    category: "Angles"
+},{
+    question: "What is the measure of one interior angle of a regular hexagon (Set 74)?",
+    options: ['120°', '135°', '150°', '160°'],
+    answer: 0,
+    feedback: "Correct! A regular hexagon has interior angles of 120°.",
+    category: "Coordinate Geometry"
+},{
+    question: "If triangle ABC is similar to triangle DEF, which of the following must be true (Set 75)?",
+    options: ['AB = DE', '∠A = ∠E', 'AC = EF', 'BC = DF'],
+    answer: 1,
+    feedback: "Correct! Corresponding angles of similar triangles are congruent.",
+    category: "Transformations"
+},{
+    question: "Which transformation is an isometry (Set 76)?",
+    options: ['Dilation', 'Rotation', 'Stretch', 'Enlargement'],
+    answer: 1,
+    feedback: "Correct! Rotation is an isometry because it preserves distances.",
+    category: "Triangles"
+},{
+    question: "What is the volume of a sphere with radius 3 (Set 77)?",
+    options: ['36π', '81π', '27π', '36'],
+    answer: 2,
+    feedback: "Correct! Volume = (4/3)πr³ = (4/3)π(27) = 36π.",
+    category: "Volume"
+},{
+    question: "Which transformation is an isometry (Set 78)?",
+    options: ['Dilation', 'Rotation', 'Stretch', 'Enlargement'],
+    answer: 1,
+    feedback: "Correct! Rotation is an isometry because it preserves distances.",
+    category: "Triangles"
+},{
+    question: "What is the measure of one interior angle of a regular hexagon (Set 79)?",
+    options: ['120°', '135°', '150°', '160°'],
+    answer: 0,
+    feedback: "Correct! A regular hexagon has interior angles of 120°.",
+    category: "Volume"
+},{
+    question: "What is the measure of one interior angle of a regular hexagon (Set 80)?",
+    options: ['120°', '135°', '150°', '160°'],
+    answer: 0,
+    feedback: "Correct! A regular hexagon has interior angles of 120°.",
+    category: "Triangles"
+},{
+    question: "What is the volume of a sphere with radius 3 (Set 81)?",
+    options: ['36π', '81π', '27π', '36'],
+    answer: 2,
+    feedback: "Correct! Volume = (4/3)πr³ = (4/3)π(27) = 36π.",
+    category: "Angles"
+},{
+    question: "If triangle ABC is similar to triangle DEF, which of the following must be true (Set 82)?",
+    options: ['AB = DE', '∠A = ∠E', 'AC = EF', 'BC = DF'],
+    answer: 1,
+    feedback: "Correct! Corresponding angles of similar triangles are congruent.",
+    category: "Angles"
+},{
+    question: "What is the midpoint of segment joining (−2, 4) and (6, −2) (Set 83)?",
+    options: ['(2, 1)', '(4, 1)', '(3, −3)', '(1, 2)'],
+    answer: 0,
+    feedback: "Correct! Midpoint = ((−2+6)/2, (4+−2)/2) = (2, 1).",
+    category: "Triangles"
+},{
+    question: "What is the volume of a sphere with radius 3 (Set 84)?",
+    options: ['36π', '81π', '27π', '36'],
+    answer: 2,
+    feedback: "Correct! Volume = (4/3)πr³ = (4/3)π(27) = 36π.",
+    category: "Coordinate Geometry"
+},{
+    question: "What is the midpoint of segment joining (−2, 4) and (6, −2) (Set 85)?",
+    options: ['(2, 1)', '(4, 1)', '(3, −3)', '(1, 2)'],
+    answer: 0,
+    feedback: "Correct! Midpoint = ((−2+6)/2, (4+−2)/2) = (2, 1).",
+    category: "Transformations"
+},{
+    question: "If triangle ABC is similar to triangle DEF, which of the following must be true (Set 86)?",
+    options: ['AB = DE', '∠A = ∠E', 'AC = EF', 'BC = DF'],
+    answer: 1,
+    feedback: "Correct! Corresponding angles of similar triangles are congruent.",
+    category: "Triangles"
+},{
+    question: "What is the midpoint of segment joining (−2, 4) and (6, −2) (Set 87)?",
+    options: ['(2, 1)', '(4, 1)', '(3, −3)', '(1, 2)'],
+    answer: 0,
+    feedback: "Correct! Midpoint = ((−2+6)/2, (4+−2)/2) = (2, 1).",
+    category: "Triangles"
+},{
+    question: "What is the midpoint of segment joining (−2, 4) and (6, −2) (Set 88)?",
+    options: ['(2, 1)', '(4, 1)', '(3, −3)', '(1, 2)'],
+    answer: 0,
+    feedback: "Correct! Midpoint = ((−2+6)/2, (4+−2)/2) = (2, 1).",
+    category: "Transformations"
+},{
+    question: "Which transformation is an isometry (Set 89)?",
+    options: ['Dilation', 'Rotation', 'Stretch', 'Enlargement'],
+    answer: 1,
+    feedback: "Correct! Rotation is an isometry because it preserves distances.",
+    category: "Angles"
+},{
+    question: "Which transformation is an isometry (Set 90)?",
+    options: ['Dilation', 'Rotation', 'Stretch', 'Enlargement'],
+    answer: 1,
+    feedback: "Correct! Rotation is an isometry because it preserves distances.",
+    category: "Coordinate Geometry"
+},{
+    question: "What is the midpoint of segment joining (−2, 4) and (6, −2) (Set 91)?",
+    options: ['(2, 1)', '(4, 1)', '(3, −3)', '(1, 2)'],
+    answer: 0,
+    feedback: "Correct! Midpoint = ((−2+6)/2, (4+−2)/2) = (2, 1).",
+    category: "Angles"
+},{
+    question: "What is the volume of a sphere with radius 3 (Set 92)?",
+    options: ['36π', '81π', '27π', '36'],
+    answer: 2,
+    feedback: "Correct! Volume = (4/3)πr³ = (4/3)π(27) = 36π.",
+    category: "Angles"
+},{
+    question: "If triangle ABC is similar to triangle DEF, which of the following must be true (Set 93)?",
+    options: ['AB = DE', '∠A = ∠E', 'AC = EF', 'BC = DF'],
+    answer: 1,
+    feedback: "Correct! Corresponding angles of similar triangles are congruent.",
+    category: "Triangles"
+},{
+    question: "If triangle ABC is similar to triangle DEF, which of the following must be true (Set 94)?",
+    options: ['AB = DE', '∠A = ∠E', 'AC = EF', 'BC = DF'],
+    answer: 1,
+    feedback: "Correct! Corresponding angles of similar triangles are congruent.",
+    category: "Triangles"
+},{
+    question: "What is the measure of one interior angle of a regular hexagon (Set 95)?",
+    options: ['120°', '135°', '150°', '160°'],
+    answer: 0,
+    feedback: "Correct! A regular hexagon has interior angles of 120°.",
+    category: "Volume"
+},{
+    question: "What is the measure of one interior angle of a regular hexagon (Set 96)?",
+    options: ['120°', '135°', '150°', '160°'],
+    answer: 0,
+    feedback: "Correct! A regular hexagon has interior angles of 120°.",
+    category: "Volume"
+},{
+    question: "What is the measure of one interior angle of a regular hexagon (Set 97)?",
+    options: ['120°', '135°', '150°', '160°'],
+    answer: 0,
+    feedback: "Correct! A regular hexagon has interior angles of 120°.",
+    category: "Transformations"
+},{
+    question: "What is the midpoint of segment joining (−2, 4) and (6, −2) (Set 98)?",
+    options: ['(2, 1)', '(4, 1)', '(3, −3)', '(1, 2)'],
+    answer: 0,
+    feedback: "Correct! Midpoint = ((−2+6)/2, (4+−2)/2) = (2, 1).",
+    category: "Triangles"
+},{
+    question: "Which transformation is an isometry (Set 99)?",
+    options: ['Dilation', 'Rotation', 'Stretch', 'Enlargement'],
+    answer: 1,
+    feedback: "Correct! Rotation is an isometry because it preserves distances.",
+    category: "Angles"
+},{
+    question: "What is the measure of one interior angle of a regular hexagon (Set 100)?",
+    options: ['120°', '135°', '150°', '160°'],
+    answer: 0,
+    feedback: "Correct! A regular hexagon has interior angles of 120°.",
+    category: "Transformations"
+},
+];
+function loadQuestion() {
+    const q = quiz[current];
+    document.getElementById('question').textContent = q.question;
+    document.getElementById('category').textContent = "Category: " + q.category;
+    const optionsDiv = document.getElementById('options');
+    optionsDiv.innerHTML = '';
+    document.getElementById('feedback').textContent = '';
+    q.options.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.textContent = opt;
+        btn.onclick = () => handleAnswer(i);
+        optionsDiv.appendChild(btn);
+    });
+    updateProgress();
+    document.getElementById('score').textContent = `Score: ${correct}/${total}`;
+}
+function handleAnswer(selected) {
+    const q = quiz[current];
+    const feedback = document.getElementById('feedback');
+    let correctFlag = false;
+    if (selected === q.answer) {
+        feedback.textContent = q.feedback;
+        feedback.style.color = 'green';
+        correct++;
+        correctFlag = true;
+    } else {
+        feedback.textContent = 'Incorrect. Try again or click Next.';
+        feedback.style.color = 'red';
+    }
+    total++;
+    reviewData.push({question: q.question, selected: q.options[selected], correct: q.options[q.answer], category: q.category, isCorrect: correctFlag});
+    document.getElementById('score').textContent = `Score: ${correct}/${total}`;
+}
+function nextQuestion() {
+    current = (current + 1) % quiz.length;
+    loadQuestion();
+}
+function updateProgress() {
+    const percent = Math.round((current / quiz.length) * 100);
+    const bar = document.getElementById('progress-bar');
+    bar.style.width = percent + '%';
+    bar.textContent = percent + '%';
+}
+function printReview() {
+    let reviewHTML = '<h3>Review Report</h3><ol>';
+    reviewData.forEach(item => {
+        reviewHTML += `<li><strong>${item.question}</strong><br/>
+        Category: ${item.category}<br/>
+        Your Answer: ${item.selected}<br/>
+        Correct Answer: ${item.correct}<br/>
+        Result: <span style='color:${item.isCorrect ? "green" : "red"}'>${item.isCorrect ? "Correct" : "Incorrect"}</span><br/></li><br/>`;
+    });
+    reviewHTML += '</ol>';
+    document.getElementById('review').innerHTML = reviewHTML;
+    window.print();
+}
+window.onload = loadQuestion;
+</script></body></html>
